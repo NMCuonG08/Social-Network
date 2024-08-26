@@ -12,6 +12,8 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
@@ -36,6 +38,7 @@ public class ChatService {
         UUID fromUserId = userDetail.getId();
         UUID toUserId = chatMessage.getReceiverID();
         populateContext(chatMessage, userDetail);
+
         boolean isTargetOnline = onlineOfflineService.isUserOnline(toUserId);
         boolean isTargetSubscribed =
                 onlineOfflineService.isUserSubscribed(toUserId, "/topic/" + conversationId);
@@ -48,7 +51,9 @@ public class ChatService {
                 .fromUser(fromUserId)
                 .toUser(toUserId)
                 .content(chatMessage.getContent())
-                .convId(conversationId);
+                .convId(conversationId)
+                .time(Timestamp.valueOf(LocalDate.now().atStartOfDay()));
+
         if(!isTargetOnline){
             log.info("{} is not online. Context saved in unseen message! " , chatMessage.getSenderEmail() );
             conversationEntityBuilder.deliveryStatus(MessageDeliveryStatusEnum.NOT_DELIVERED.toString());
@@ -59,7 +64,6 @@ public class ChatService {
             conversationEntityBuilder.deliveryStatus(MessageDeliveryStatusEnum.DELIVERED.toString());
             chatMessage.setMessageDeliveryStatusEnum(MessageDeliveryStatusEnum.DELIVERED);
             simpMessageSendingOperations.convertAndSend("/topic/ " + toUserId.toString(), chatMessage);
-
         }
         else {
             conversationEntityBuilder.deliveryStatus(MessageDeliveryStatusEnum.SEEN.toString());

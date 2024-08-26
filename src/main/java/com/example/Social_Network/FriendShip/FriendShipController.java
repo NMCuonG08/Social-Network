@@ -52,7 +52,7 @@ public class FriendShipController {
         return ResponseEntity.ok(userResponses);
     }
     @PutMapping("/accept/{id}")
-    public String AcceptFriendRequest(@PathVariable UUID id ){
+    public String AcceptFriendRequest(@PathVariable Long id ){
         Optional<FriendShip> friendShip = friendShipService.acceptFriendRequest(id);
         if(friendShip.isPresent()){
             return "Accept Friend Successfully!";
@@ -60,15 +60,29 @@ public class FriendShipController {
         return "Error";
     }
     @DeleteMapping("/cancel/{id}")
-    public String cancelFriendRequest(@PathVariable UUID id ){
+    public String cancelFriendRequest(@PathVariable Long id ){
         friendShipService.cancelFriendRequest(id);
         return "Cancel Friend Successfully!";
     }
     @PostMapping("/add-chat/{id}")
-    public void addNewChat(@PathVariable UUID id,
+    public void addNewChat(@PathVariable Long id,
         @RequestParam String content
     ){
         friendShipService.addNewChat(id, content);
     }
+    @GetMapping("/isFriend/{userId}")
+    public ResponseEntity<FriendShipResponse> isFriend(
+            @PathVariable UUID userId,
+            @RequestParam UUID receiveUserId) {
+        FriendShip friendShip = friendShipService.findIsFriend(userId, receiveUserId);
+
+        if (friendShip == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        FriendShipResponse friendShipResponse = friendShipService.convertToResponse(friendShip);
+        return ResponseEntity.ok(friendShipResponse);
+    }
+
 
 }

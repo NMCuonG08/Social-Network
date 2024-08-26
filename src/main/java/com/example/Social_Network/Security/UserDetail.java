@@ -22,6 +22,7 @@ public class UserDetail implements UserDetails {
     private List<GrantedAuthority>authorities;
 
     public UserDetail(User user) {
+        this.id = user.getId();
         this.email = user.getEmail();
         this.password = user.getPassWord();
         this.isEnable = user.isEnable();

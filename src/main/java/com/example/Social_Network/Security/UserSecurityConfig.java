@@ -83,8 +83,8 @@ public class UserSecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
-    public AuthenticationProvider authenticationProvider(){
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(){
         var authenticationProvider  = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userRegistrationDetails);
         authenticationProvider.setPasswordEncoder(passwordEncoder());

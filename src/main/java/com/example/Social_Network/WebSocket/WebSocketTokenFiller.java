@@ -29,7 +29,7 @@ public class WebSocketTokenFiller  implements ChannelInterceptor {
             String jwt = jwtService.parseJwt(accessor);
             if(jwt != null && jwtService.validToken(jwt)){
                 String username = jwtService.extractUsernameFromToken(jwt);
-                UserDetails userDetails = userDetailService.loadUserByUsername(jwt);
+                UserDetails userDetails = userDetailService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authenticationToken  =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null,userDetails.getAuthorities()
@@ -37,7 +37,6 @@ public class WebSocketTokenFiller  implements ChannelInterceptor {
                 accessor.setUser(authenticationToken);
             }
         }
-
         return message;
     }
 }

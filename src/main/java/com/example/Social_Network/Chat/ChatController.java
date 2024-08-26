@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-@CrossOrigin("http://localhost:5173")
+
 @Controller
 @Slf4j
 @RequiredArgsConstructor
@@ -26,8 +26,12 @@ public class ChatController {
             SimpMessageHeaderAccessor simpMessageHeaderAccessor,
             @DestinationVariable("convId") String conversationId
     ) {
+
         chatService.sendMessageToConvId(chatMessage, conversationId, simpMessageHeaderAccessor);
         return chatMessage;
     }
+
+    
+
 
 }

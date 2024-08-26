@@ -38,10 +38,12 @@ public class WebSocketEventListener {
                 (String) sessionSubscribeEvent.getMessage().getHeaders().get("simpDestination");
         String simpSessionId =
                 (String) sessionSubscribeEvent.getMessage().getHeaders().get("simpSessionId");
-        if (subscribedChannel == null) {
-            log.error("SUBSCRIBED TO NULL?? WAT?!");
+
+        if (subscribedChannel == null || simpSessionId == null) {
+            log.error("SUBSCRIBED TO NULL CHANNEL OR NULL SESSION ID?? WAT?!");
             return;
         }
+
         simpSessionIdToSubscriptionId.put(simpSessionId, subscribedChannel);
         onlineOfflineService.addUserSubscribed(sessionSubscribeEvent.getUser(), subscribedChannel);
     }
@@ -57,8 +59,4 @@ public class WebSocketEventListener {
     public void handleConnectedEvent(SessionConnectedEvent sessionConnectedEvent) {
         onlineOfflineService.addOnlineUser(sessionConnectedEvent.getUser());
     }
-
-
-
-
 }

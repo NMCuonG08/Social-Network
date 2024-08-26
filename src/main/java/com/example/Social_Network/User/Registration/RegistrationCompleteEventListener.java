@@ -30,6 +30,7 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
     private User theUser;
 
 
+
     @Override
     public void onApplicationEvent(RegistrationCompleteEvent event) {
         theUser = event.getUser();
@@ -48,7 +49,7 @@ public class RegistrationCompleteEventListener implements ApplicationListener<Re
         String subject ="Email verification";
         String senderName = " Social Network Register ";
         String mailContent = "<p> Hi, " + theUser.getEmail() + ", </p>"
-                + "<p> Thank you for registration with us, " + " " +
+                + "<p> Thank you for registration with us. <br/> " + " " +
                 "Please, follow the link below to complete your registration! </p>" +
                 "<a href=\"" + url + "\">Verify your email to activate yout account!</a>" +
                 "<p> Thank you <br> Users Registration Portal Service ";

@@ -26,4 +26,8 @@ public interface IUserService {
     Optional<User> getUserById(UUID id);
 
     List<UUID> getUserIds();
+
+    UUID getUserId(String email);
+
+    List<User> findUserByNameOrEmail(String name, String currentEmail);
 }

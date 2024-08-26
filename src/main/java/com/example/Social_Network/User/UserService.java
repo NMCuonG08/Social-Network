@@ -130,4 +130,14 @@ public class UserService implements IUserService {
     public List<UUID> getUserIds() {
         return userRepository.findUserIds();
     }
+
+    @Override
+    public UUID getUserId(String email) {
+        return userRepository.findByEmail(email).get().getId();
+    }
+
+    @Override
+    public List<User> findUserByNameOrEmail(String name, String currentEmail) {
+        return userRepository.findUserByNameOrEmail(name, currentEmail);
+    }
 }

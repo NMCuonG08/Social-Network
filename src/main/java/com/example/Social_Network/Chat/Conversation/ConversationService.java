@@ -5,6 +5,7 @@ import static com.example.Social_Network.DbBoiii.getConvId;
 import com.example.Social_Network.Chat.ChatMessage;
 import com.example.Social_Network.Chat.MessageDeliveryStatusEnum;
 import com.example.Social_Network.Chat.MessageType;
+import com.example.Social_Network.FriendShip.FriendShipService;
 import com.example.Social_Network.Mapper.ChatMessageMapper;
 import com.example.Social_Network.Security.SecurityUtils;
 import com.example.Social_Network.Security.UserDetail;
@@ -32,20 +33,22 @@ public class ConversationService {
     private final ConversationRepository conversationRepository;
     private final OnlineOfflineService onlineOfflineService;
     private final SimpMessageSendingOperations simpMessageSendingOperations;
-
+    private final FriendShipService friendShipService;
     @Autowired
-    public ConversationService(UserRepository userRepository, SecurityUtils securityUtils, ChatMessageMapper chatMessageMapper, ConversationRepository conversationRepository, OnlineOfflineService onlineOfflineService, SimpMessageSendingOperations simpMessageSendingOperations) {
+    public ConversationService(UserRepository userRepository, SecurityUtils securityUtils, ChatMessageMapper chatMessageMapper, ConversationRepository conversationRepository, OnlineOfflineService onlineOfflineService, SimpMessageSendingOperations simpMessageSendingOperations,FriendShipService friendShipService) {
         this.userRepository = userRepository;
         this.securityUtils = securityUtils;
         this.chatMessageMapper = chatMessageMapper;
         this.conversationRepository = conversationRepository;
         this.onlineOfflineService = onlineOfflineService;
         this.simpMessageSendingOperations = simpMessageSendingOperations;
+        this.friendShipService = friendShipService;
     }
 
     List<UserConnection> getUserFriend(){
         UserDetail userDetail = securityUtils.getUser();
         String username = userDetail.getEmail();
+        UUID userId = userDetail.getId();
         List<User> users = userRepository.findAll();
         User thisUser = users.stream()
                 .filter(user -> user.getEmail().equals(username))
@@ -65,7 +68,43 @@ public class ConversationService {
                 .toList();
 
     }
+    List<UserConnection> getUserFriends(){
+        UserDetail userDetail = securityUtils.getUser();
+        String username = userDetail.getEmail();
+        UUID userId = userDetail.getId();
+        List<User> users = friendShipService.showAllFriend(userId);
+        User thisUser = userRepository.findById(userId).get();
+        return users.stream()
+                .filter(user -> !user.getEmail().equals(username))
+                .map(
+                        user ->
+                                UserConnection.builder()
+                                        .connectionID(user.getId())
+                                        .connectionUsername(
+                                                user.getUserName() != null && !user.getUserName().isEmpty()
+                                                        ? user.getUserName()
+                                                        : user.getEmail()
+                                        )
+                                        .convId(getConvId(user, thisUser))
+                                        .unSeen(0)
+                                        .isOnline(onlineOfflineService.isUserOnline(user.getId()))
+                                        .build())
+                .toList();
 
+    }
+    public UserConnection getUserAndFriend(UUID friendId) {
+        UserDetail userDetail = securityUtils.getUser();
+        String email = userDetail.getEmail();
+        User friend = userRepository.findById(friendId).get();
+        User user = userRepository.findByEmail(email).get();
+        return UserConnection.builder()
+                .connectionID(user.getId())
+                .connectionUsername(email)
+                .convId(getConvId(user,  friend))
+                .unSeen(0)
+                .isOnline(onlineOfflineService.isUserOnline(user.getId()))
+                .build();
+    }
 
     public List<UnseenMessageCountResponse> getUnseenMessageCount() {
         List<UnseenMessageCountResponse> result = new ArrayList<>();
@@ -129,6 +168,5 @@ public class ConversationService {
 
         return chatMessageMapper.toChatMessage(saved, securityUtils.getUser(), MessageType.CHAT);
     }
-
 
 }

@@ -16,9 +16,11 @@ public interface IFriendShipService {
 
     List<User> showAllFriend(UUID userId);
 
-    Optional<FriendShip> acceptFriendRequest(UUID id);
+    Optional<FriendShip> acceptFriendRequest(Long id);
 
-    void cancelFriendRequest(UUID id);
+    void cancelFriendRequest(Long id);
 
-    void addNewChat(UUID id, String content);
+    void addNewChat(Long id, String content);
+
+    FriendShip findIsFriend(UUID userId, UUID receiveUserId);
 }

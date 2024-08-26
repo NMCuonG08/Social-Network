@@ -35,6 +35,7 @@ public class OnlineOfflineService {
         this.userService = userService;
         this.onlineUsers = new ConcurrentSkipListSet<>();
         this.userSubscribed = new ConcurrentHashMap<>();
+
         this.userRepository = userRepository;
         this.simpMessageSendingOperations = simpMessageSendingOperations;
     }
@@ -42,20 +43,26 @@ public class OnlineOfflineService {
     public void addOnlineUser(Principal user){
         if(user != null ) {
             UserDetail userDetails = getUserDetails(user);
-            log.info("{} went offline", userDetails.getEmail());
-            onlineUsers.remove(userDetails.getId());
-            userSubscribed.remove(userDetails.getId());
-            for (UUID id : onlineUsers){
-                simpMessageSendingOperations.convertAndSend(
-                        "/topic" + id,
-                        ChatMessage.builder().
-                                messageType(MessageType.FRIEND_OFFLINE)
-                                .userConnection(UserConnection.builder().connectionID(userDetails.getId()).build())
-                                .build());
+            if (userDetails != null && userDetails.getId() != null) {
+                log.info("{} went offline", userDetails.getEmail());
+                onlineUsers.remove(userDetails.getId());
+                userSubscribed.remove(userDetails.getId());
+                for (UUID id : onlineUsers){
+                    simpMessageSendingOperations.convertAndSend(
+                            "/topic" + id,
+                            ChatMessage.builder().
+                                    messageType(MessageType.FRIEND_OFFLINE)
+                                    .userConnection(UserConnection.builder().connectionID(userDetails.getId()).build())
+                                    .build());
+                }
+            } else {
+                log.error("UserDetails or User ID is null for Principal: {}", user);
             }
+        } else {
+            log.error("Principal is null");
         }
-
     }
+
 
 
     public boolean isUserOnline(UUID userId) {
@@ -93,6 +100,12 @@ public class OnlineOfflineService {
 
     public void addUserSubscribed(Principal user, String subscribedChannel) {
         UserDetail userDetails = getUserDetails(user);
+
+        if (userDetails == null || userDetails.getId() == null) {
+            log.error("UserDetails or User ID is null");
+            return;
+        }
+
         log.info("{} subscribed to {}", userDetails.getUsername(), subscribedChannel);
         Set<String> subscriptions = userSubscribed.getOrDefault(userDetails.getId(), new HashSet<>());
         subscriptions.add(subscribedChannel);
@@ -101,7 +114,7 @@ public class OnlineOfflineService {
 
     public void removeUserSubscribed(Principal user, String subscribedChannel) {
         UserDetail userDetails = getUserDetails(user);
-        log.info("unsubscription! {} unsubscribed {}", userDetails.getUsername(), subscribedChannel);
+        log.info("unSubscription! {} unSubscribed {}", userDetails.getUsername(), subscribedChannel);
         Set<String> subscriptions = userSubscribed.getOrDefault(userDetails.getId(), new HashSet<>());
         subscriptions.remove(subscribedChannel);
         userSubscribed.put(userDetails.getId(), subscriptions);

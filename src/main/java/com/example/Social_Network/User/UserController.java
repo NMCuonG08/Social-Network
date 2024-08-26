@@ -38,6 +38,8 @@ public class UserController {
         User user = userService.updateUser(id,userName,birthDay,gender,address,job,photoBytes);
         return "User with id = " + id + " have been updated successfully!";
     }
+
+    
     @GetMapping("/get-user")
     public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email){
         Optional<User> user = userService.getUserByEmail(email);
@@ -47,6 +49,8 @@ public class UserController {
         }
         return ResponseEntity.ok(userResponse);
     }
+
+
     @GetMapping("/{id}/get-user")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id){
         Optional<User> user = userService.getUserById(id);
@@ -56,6 +60,8 @@ public class UserController {
         }
         return ResponseEntity.ok(userResponse);
     }
+
+
     @GetMapping("/online")
     @PreAuthorize("hasAuthority(ADMIN)")
     List<UserResponse> getOnlineUser(){
@@ -68,10 +74,26 @@ public class UserController {
     Map<String, Set<String>> getSubscriptions() {
         return onlineOfflineService.getUserSubscribed();
     }
-    @GetMapping("/ids")
-    public List<UUID> getUserId(){
-        return userService.getUserIds();
 
+    @GetMapping("/ids")
+    public List<UUID> getUserIds(){
+        return userService.getUserIds();
     }
+
+    @GetMapping("/get-id")
+    public UUID getUserId(@RequestParam String email){
+        return  userService.getUserId(email);
+    }
+    @GetMapping("/find-user")
+    public ResponseEntity<List<UserResponse>> findUserByName(@RequestParam String name, @RequestParam String currentEmail){
+        List<User>  users= userService.findUserByNameOrEmail(name, currentEmail);
+        List<UserResponse> userResponses = users.stream().map(
+                user -> userService.convertToResponse(user)
+        ).toList();
+        return ResponseEntity.ok(userResponses);
+    }
+
+
+
 
 }

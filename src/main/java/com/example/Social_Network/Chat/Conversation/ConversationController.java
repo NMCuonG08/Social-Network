@@ -17,8 +17,14 @@ public class ConversationController {
 
     @GetMapping("/friends")
     public List<UserConnection> getUserFriends(){
-        return conversationService.getUserFriend();
+        return conversationService.getUserFriends();
     }
+    @GetMapping("/connect-friend")
+    public UserConnection getUserFriend(@RequestParam UUID friendId){
+        return conversationService.getUserAndFriend(friendId);
+    }
+
+
     @GetMapping("/unseenMessages")
     public List<UnseenMessageCountResponse> getUnseenMessageCount(){
         return conversationService.getUnseenMessageCount();

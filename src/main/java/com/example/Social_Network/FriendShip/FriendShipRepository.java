@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface FriendShipRepository extends JpaRepository<FriendShip, UUID> {
+public interface FriendShipRepository extends JpaRepository<FriendShip, Long> {
     List<FriendShip> findByIdRequiredUser(UUID userId);
 
     @Query("SELECT f.idReceivedUser FROM FriendShip f WHERE f.idRequiredUser = :userId AND f.status = true" +
@@ -16,4 +16,6 @@ public interface FriendShipRepository extends JpaRepository<FriendShip, UUID> {
     @Query("SELECT f.idRequiredUser FROM FriendShip f WHERE f.idReceivedUser = :userId AND f.status = true" +
             " ")
     List<UUID> findOtherFriends(@Param("userId") UUID userId);
+    @Query("SELECT f FROM FriendShip f WHERE f.idRequiredUser = :userId AND f.idReceivedUser = :receiveUserId ")
+    FriendShip findByUserIdAndReceiveUserId(@Param("userId") UUID userId, @Param("receiveUserId") UUID receiveUserId);
 }

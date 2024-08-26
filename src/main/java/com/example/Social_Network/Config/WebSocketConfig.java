@@ -10,7 +10,6 @@ import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -19,18 +18,19 @@ import org.springframework.web.socket.server.standard.TomcatRequestUpgradeStrate
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 @Configuration
-@EnableWebSocket
 @EnableWebSocketMessageBroker
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-
-    private final String frontendCallerHost = "http://localhost:5173";
+    @Value("${frontend.caller.host}")
+    private String frontendCallerHost;
 
     private final WebSocketTokenFiller webSocketTokenFiller;
+
     public WebSocketConfig(WebSocketTokenFiller webSocketTokenFiller) {
         this.webSocketTokenFiller = webSocketTokenFiller;
     }
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(webSocketTokenFiller);
@@ -38,26 +38,27 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-            //registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:5173").withSockJS();
         RequestUpgradeStrategy upgradeStrategy = new TomcatRequestUpgradeStrategy();
         registry.addEndpoint("/ws")
                 .setHandshakeHandler(new DefaultHandshakeHandler(upgradeStrategy))
-                .setAllowedOrigins(frontendCallerHost);
+                .setAllowedOrigins(frontendCallerHost) ;
+                 // Enable SockJS if needed
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-            /*registry.setApplicationDestinationPrefixes("/app");
-            registry.enableSimpleBroker("/topic");*/
-
-      registry
-              .setApplicationDestinationPrefixes("/app")
-              .enableSimpleBroker("/topic")
-              .setTaskScheduler(heartBeatScheduler())
-              .setHeartbeatValue(new long[] {1000L , 1000L});
+        registry
+                .setApplicationDestinationPrefixes("/app")
+                .enableSimpleBroker("/topic")
+                .setTaskScheduler(heartBeatScheduler())
+                .setHeartbeatValue(new long[] {1000L, 1000L});
     }
+
     @Bean
     public TaskScheduler heartBeatScheduler() {
-        return new ThreadPoolTaskScheduler();
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1);  // Adjust based on your needs
+        scheduler.initialize();
+        return scheduler;
     }
 }

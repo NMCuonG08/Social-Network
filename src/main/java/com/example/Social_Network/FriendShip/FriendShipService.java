@@ -67,7 +67,7 @@ public class FriendShipService implements IFriendShipService {
 
 
     @Override
-    public Optional<FriendShip> acceptFriendRequest(UUID id) {
+    public Optional<FriendShip> acceptFriendRequest(Long id) {
         Optional<FriendShip> friendShip = friendShipRepository.findById(id);
         if (friendShip.isPresent()){
             friendShip.get().setStatus(true);
@@ -80,7 +80,7 @@ public class FriendShipService implements IFriendShipService {
     }
 
     @Override
-    public void cancelFriendRequest(UUID id) {
+    public void cancelFriendRequest(Long id) {
         Optional<FriendShip> friendShip = friendShipRepository.findById(id);
         if (friendShip.isPresent()){
             friendShipRepository.delete(friendShip.get());
@@ -92,7 +92,7 @@ public class FriendShipService implements IFriendShipService {
     }
 
     @Override
-    public void addNewChat(UUID id, String content) {
+    public void addNewChat(Long id, String content) {
         Optional<FriendShip> friendShipOptional = friendShipRepository.findById(id);
         if (friendShipOptional.isPresent()) {
             FriendShip friendShip = friendShipOptional.get();
@@ -102,6 +102,12 @@ public class FriendShipService implements IFriendShipService {
         } else {
             throw new UserNotFoundException("FriendShip with id " + id + " not found.");
         }
+    }
+
+    @Override
+    public FriendShip findIsFriend(UUID userId, UUID receiveUserId) {
+        return friendShipRepository.findByUserIdAndReceiveUserId(userId, receiveUserId);
+
     }
 
 }
